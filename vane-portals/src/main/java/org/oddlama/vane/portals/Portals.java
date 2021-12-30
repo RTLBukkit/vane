@@ -443,30 +443,14 @@ public class Portals extends Module<Portals> {
 	public void remove_portal_block(final PortalBlock portal_block) {
 		// Restore original block
 		switch (portal_block.type()) {
-			case ORIGIN:
-				portal_block.block().setType(constructor.config_material_origin);
-				break;
-			case CONSOLE:
-				portal_block.block().setType(constructor.config_material_console);
-				break;
-			case BOUNDARY_1:
-				portal_block.block().setType(constructor.config_material_boundary_1);
-				break;
-			case BOUNDARY_2:
-				portal_block.block().setType(constructor.config_material_boundary_2);
-				break;
-			case BOUNDARY_3:
-				portal_block.block().setType(constructor.config_material_boundary_3);
-				break;
-			case BOUNDARY_4:
-				portal_block.block().setType(constructor.config_material_boundary_4);
-				break;
-			case BOUNDARY_5:
-				portal_block.block().setType(constructor.config_material_boundary_5);
-				break;
-			case PORTAL:
-				portal_block.block().setType(constructor.config_material_portal_area);
-				break;
+			case ORIGIN -> portal_block.block().setType(constructor.config_material_origin);
+			case CONSOLE -> portal_block.block().setType(constructor.config_material_console);
+			case BOUNDARY_1 -> portal_block.block().setType(constructor.config_material_boundary_1);
+			case BOUNDARY_2 -> portal_block.block().setType(constructor.config_material_boundary_2);
+			case BOUNDARY_3 -> portal_block.block().setType(constructor.config_material_boundary_3);
+			case BOUNDARY_4 -> portal_block.block().setType(constructor.config_material_boundary_4);
+			case BOUNDARY_5 -> portal_block.block().setType(constructor.config_material_boundary_5);
+			case PORTAL -> portal_block.block().setType(constructor.config_material_portal_area);
 		}
 
 		// Remove console item if block is a console

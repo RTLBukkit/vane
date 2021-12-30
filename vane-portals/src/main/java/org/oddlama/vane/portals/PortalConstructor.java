@@ -20,6 +20,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.jetbrains.annotations.Nullable;
 import org.oddlama.vane.annotation.config.ConfigInt;
 import org.oddlama.vane.annotation.config.ConfigMaterial;
+import org.oddlama.vane.annotation.config.ConfigMaterialSet;
 import org.oddlama.vane.annotation.lang.LangMessage;
 import org.oddlama.vane.core.Listener;
 import org.oddlama.vane.core.lang.TranslatedMessage;
@@ -38,29 +39,20 @@ public class PortalConstructor extends Listener<Portals> {
 	@ConfigMaterial(def = Material.ENCHANTING_TABLE, desc = "The block used to build portal consoles.")
 	public Material config_material_console;
 
-	@ConfigMaterial(def = Material.OBSIDIAN, desc = "The block used to build the portal boundary. Variation 1.")
-	public Material config_material_boundary_1;
-
-	@ConfigMaterial(def = Material.CRYING_OBSIDIAN, desc = "The block used to build the portal boundary. Variation 2.")
-	public Material config_material_boundary_2;
-
-	@ConfigMaterial(def = Material.GOLD_BLOCK, desc = "The block used to build the portal boundary. Variation 3.")
-	public Material config_material_boundary_3;
-
-	@ConfigMaterial(
-		def = Material.GILDED_BLACKSTONE,
-		desc = "The block used to build the portal boundary. Variation 4."
-	)
-	public Material config_material_boundary_4;
-
-	@ConfigMaterial(def = Material.EMERALD_BLOCK, desc = "The block used to build the portal boundary. Variation 5.")
-	public Material config_material_boundary_5;
+	@ConfigMaterialSet(def = {
+			Material.OBSIDIAN,
+			Material.CRYING_OBSIDIAN,
+			Material.GOLD_BLOCK,
+			Material.GILDED_BLACKSTONE,
+			Material.EMERALD_BLOCK
+	}, desc = "The blocks used to build the portal boundary.")
+	public Set<Material> config_material_boundary;
 
 	@ConfigMaterial(def = Material.NETHERITE_BLOCK, desc = "The block used to build the portal origin.")
 	public Material config_material_origin;
 
-	@ConfigMaterial(def = Material.AIR, desc = "The block used to build the portal area.")
-	public Material config_material_portal_area;
+	@ConfigMaterialSet(def = {Material.AIR, Material.CAVE_AIR, Material.VOID_AIR, Material.WATER}, desc = "The block used to build the portal area.")
+	public Set<Material> config_material_portal_area;
 
 	@ConfigInt(def = 12, min = 1, desc = "Maximum horizontal distance between a console block and the portal.")
 	public int config_console_max_distance_xz;
@@ -155,11 +147,7 @@ public class PortalConstructor extends Listener<Portals> {
 	@Override
 	public void on_config_change() {
 		portal_boundary_build_materials.clear();
-		portal_boundary_build_materials.add(config_material_boundary_1);
-		portal_boundary_build_materials.add(config_material_boundary_2);
-		portal_boundary_build_materials.add(config_material_boundary_3);
-		portal_boundary_build_materials.add(config_material_boundary_4);
-		portal_boundary_build_materials.add(config_material_boundary_5);
+		portal_boundary_build_materials.addAll(config_material_boundary);
 		portal_boundary_build_materials.add(config_material_origin);
 	}
 
@@ -333,13 +321,7 @@ public class PortalConstructor extends Listener<Portals> {
 	}
 
 	public boolean is_type_part_of_boundary(final Material material) {
-		return (
-			material == config_material_boundary_1 ||
-			material == config_material_boundary_2 ||
-			material == config_material_boundary_3 ||
-			material == config_material_boundary_4 ||
-			material == config_material_boundary_5
-		);
+		return config_material_boundary.contains(material);
 	}
 
 	public boolean is_type_part_of_boundary_or_origin(final Material material) {
@@ -387,26 +369,19 @@ public class PortalConstructor extends Listener<Portals> {
 		final var mat = block.getType();
 		if (mat == config_material_console) {
 			type = PortalBlock.Type.CONSOLE;
-		} else if (mat == config_material_boundary_1) {
-			type = PortalBlock.Type.BOUNDARY_1;
-		} else if (mat == config_material_boundary_2) {
-			type = PortalBlock.Type.BOUNDARY_2;
-		} else if (mat == config_material_boundary_3) {
-			type = PortalBlock.Type.BOUNDARY_3;
-		} else if (mat == config_material_boundary_4) {
-			type = PortalBlock.Type.BOUNDARY_4;
-		} else if (mat == config_material_boundary_5) {
-			type = PortalBlock.Type.BOUNDARY_5;
+		} else if (config_material_boundary.contains(mat)) {
+			type = new PortalBlock.BOUNDARY(mat);
 		} else if (mat == config_material_origin) {
 			type = PortalBlock.Type.ORIGIN;
-		} else if (mat == config_material_portal_area) {
-			type = PortalBlock.Type.PORTAL;
+		} else if (config_material_portal_area.contains(mat)) {
+			type = new PortalBlock.PORTAL(mat);
 		} else {
 			get_module()
 				.log.warning(
-					"Invalid block type '" + mat + "' encounterd in portal block creation. Assuming boundary variant 1."
+					"Invalid block type '" + mat + "' encountered in portal block creation. Assuming boundary block."
 				);
-			type = PortalBlock.Type.BOUNDARY_1;
+			// Hopefully this doesn't allow some crazy obsidian dupe.
+			type = new PortalBlock.BOUNDARY(config_material_boundary.stream().findFirst().orElse(Material.OBSIDIAN));
 		}
 		return new PortalBlock(block, type);
 	}

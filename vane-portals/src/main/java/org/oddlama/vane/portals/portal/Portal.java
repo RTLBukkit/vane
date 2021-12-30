@@ -2,6 +2,8 @@ package org.oddlama.vane.portals.portal;
 
 import static org.oddlama.vane.core.persistent.PersistentSerializer.from_json;
 import static org.oddlama.vane.core.persistent.PersistentSerializer.to_json;
+import static org.oddlama.vane.portals.portal.PortalBlock.Type.CONSOLE;
+import static org.oddlama.vane.portals.portal.PortalBlock.Type.ORIGIN;
 import static org.oddlama.vane.util.BlockUtil.adjacent_blocks_3d;
 
 import java.io.IOException;
@@ -216,21 +218,14 @@ public class Portal {
 	private Set<Block> controlling_blocks() {
 		final var controlling_blocks = new HashSet<Block>();
 		for (final var pb : blocks()) {
-			switch (pb.type()) {
-				default:
-					break;
-				case ORIGIN:
-				case BOUNDARY_1:
-				case BOUNDARY_2:
-				case BOUNDARY_3:
-				case BOUNDARY_4:
-				case BOUNDARY_5:
-					controlling_blocks.add(pb.block());
-					break;
-				case CONSOLE:
-					controlling_blocks.add(pb.block());
-					controlling_blocks.addAll(Arrays.asList(adjacent_blocks_3d(pb.block())));
-					break;
+			PortalBlock.Type type = pb.type();
+			if (ORIGIN.equals(type)) {
+				controlling_blocks.add(pb.block());
+			} else if (CONSOLE.equals(type)) {
+				controlling_blocks.add(pb.block());
+				controlling_blocks.addAll(Arrays.asList(adjacent_blocks_3d(pb.block())));
+			} else if (type instanceof PortalBlock.BOUNDARY) {
+				controlling_blocks.add(pb.block());
 			}
 		}
 		return controlling_blocks;
@@ -363,7 +358,7 @@ public class Portal {
 				final var end_gateway = (EndGateway) portal_block.block().getState(false);
 				end_gateway.setAge(200l);
 			}
-			if (portal_block.type() == PortalBlock.Type.CONSOLE) {
+			if (portal_block.type() == CONSOLE) {
 				portals.update_console_item(this, portal_block.block());
 			}
 		}

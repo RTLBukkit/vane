@@ -6,7 +6,10 @@ import static org.oddlama.vane.util.Util.namespaced_key;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Predicate;
+
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
@@ -56,8 +59,8 @@ public class Style {
 	}
 
 	private NamespacedKey key;
-	private Map<PortalBlock.Type, Material> active_materials = new HashMap<>();
-	private Map<PortalBlock.Type, Material> inactive_materials = new HashMap<>();
+	private Map<PortalBlock.Type, Material> active_materials = new LinkedHashMap<>();
+	private Map<PortalBlock.Type, Material> inactive_materials = new LinkedHashMap<>();
 
 	public Style(final NamespacedKey key) {
 		this.key = key;
@@ -100,41 +103,54 @@ public class Style {
 	}
 
 	public void check_valid() {
-		// Checks if every key is set
-		for (final var type : PortalBlock.Type.values()) {
-			if (!active_materials.containsKey(type)) {
-				throw new RuntimeException(
+		// Checks if every key contains at least 1 material.
+		check_valid(PortalBlock.Type.ORIGIN::equals);
+		check_valid(PortalBlock.Type.CONSOLE::equals);
+		check_valid(PortalBlock.BOUNDARY.class::isInstance);
+		check_valid(PortalBlock.PORTAL.class::isInstance);
+	}
+
+	public void check_valid(Predicate<PortalBlock.Type> type) {
+
+		if (!active_materials.keySet().stream().anyMatch(type)) {
+			throw new RuntimeException(
 					"Invalid style definition! Active state for PortalBlock.Type." + type + " was not specified!"
-				);
-			}
-			if (!inactive_materials.containsKey(type)) {
-				throw new RuntimeException(
+			);
+		}
+		if (!inactive_materials.keySet().stream().anyMatch(type)) {
+			throw new RuntimeException(
 					"Invalid style definition! Inactive state for PortalBlock.Type." + type + " was not specified!"
-				);
-			}
+			);
 		}
 	}
 
 	public static Style default_style() {
 		final var style = new Style(default_style_key());
-		style.set_material(true, PortalBlock.Type.BOUNDARY_1, Material.OBSIDIAN);
-		style.set_material(true, PortalBlock.Type.BOUNDARY_2, Material.CRYING_OBSIDIAN);
-		style.set_material(true, PortalBlock.Type.BOUNDARY_3, Material.GOLD_BLOCK);
-		style.set_material(true, PortalBlock.Type.BOUNDARY_4, Material.GILDED_BLACKSTONE);
-		style.set_material(true, PortalBlock.Type.BOUNDARY_5, Material.EMERALD_BLOCK);
-		style.set_material(true, PortalBlock.Type.CONSOLE, Material.ENCHANTING_TABLE);
-		style.set_material(true, PortalBlock.Type.ORIGIN, Material.OBSIDIAN);
-		style.set_material(true, PortalBlock.Type.PORTAL, Material.END_GATEWAY);
-		style.set_material(false, PortalBlock.Type.BOUNDARY_1, Material.OBSIDIAN);
-		style.set_material(false, PortalBlock.Type.BOUNDARY_2, Material.CRYING_OBSIDIAN);
-		style.set_material(false, PortalBlock.Type.BOUNDARY_3, Material.GOLD_BLOCK);
-		style.set_material(false, PortalBlock.Type.BOUNDARY_4, Material.GILDED_BLACKSTONE);
-		style.set_material(false, PortalBlock.Type.BOUNDARY_5, Material.EMERALD_BLOCK);
-		style.set_material(false, PortalBlock.Type.CONSOLE, Material.ENCHANTING_TABLE);
-		style.set_material(false, PortalBlock.Type.ORIGIN, Material.OBSIDIAN);
-		style.set_material(false, PortalBlock.Type.PORTAL, Material.AIR);
+
+		final var default_mats = Map.of(
+				Material.OBSIDIAN, Material.OBSIDIAN,
+				Material.CRYING_OBSIDIAN, Material.CRYING_OBSIDIAN,
+				Material.GOLD_BLOCK, Material.GOLD_BLOCK,
+				Material.GILDED_BLACKSTONE, Material.GILDED_BLACKSTONE,
+				Material.EMERALD_BLOCK, Material.EMERALD_BLOCK
+		);
+
+		style.set_boundary(true, default_mats);
+		style.set_console(true, Material.ENCHANTING_TABLE);
+		style.set_origin(true, Material.OBSIDIAN);
+		style.set_portal(true, Material.END_GATEWAY);
+		style.set_boundary(false, default_mats);
+		style.set_console(false,Material.ENCHANTING_TABLE);
+		style.set_origin(false, Material.NETHERITE_BLOCK);
+		style.set_portal(false, Material.AIR);
+
 		return style;
 	}
+
+	private <K, V> void set_boundary(boolean active, Map<K, V> boundaryStyles) {
+
+	}
+
 
 	public Style copy(final NamespacedKey new_key) {
 		final var copy = new Style(new_key);

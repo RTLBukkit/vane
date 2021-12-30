@@ -5,6 +5,8 @@ import static org.oddlama.vane.core.persistent.PersistentSerializer.to_json;
 
 import java.io.IOException;
 import java.util.UUID;
+
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
 import org.oddlama.vane.external.json.JSONObject;
@@ -67,14 +69,12 @@ public class PortalBlock {
 		return block().equals(po.block());
 	}
 
-	public static enum Type {
-		ORIGIN,
-		CONSOLE,
-		BOUNDARY_1,
-		BOUNDARY_2,
-		BOUNDARY_3,
-		BOUNDARY_4,
-		BOUNDARY_5,
-		PORTAL,
+	public sealed interface Type permits ORIGIN, CONSOLE, BOUNDARY, PORTAL {
+		public static final ORIGIN ORIGIN = new ORIGIN();
+		public static final CONSOLE CONSOLE = new CONSOLE();
 	}
+	public record BOUNDARY(Material material) implements Type {}
+	public record ORIGIN() implements Type {}
+	public record CONSOLE() implements Type {}
+	public record PORTAL(Material material) implements Type {}
 }
