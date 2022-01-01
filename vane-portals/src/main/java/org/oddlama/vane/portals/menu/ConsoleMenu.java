@@ -44,6 +44,15 @@ public class ConsoleMenu extends ModuleComponent<Portals> {
 	@LangMessage
 	public TranslatedMessage lang_filter_portals_title;
 
+	@LangMessage
+	public TranslatedMessage publicz;
+	@LangMessage
+	public TranslatedMessage privatez;
+	@LangMessage
+	public TranslatedMessage group;
+	@LangMessage
+	public TranslatedMessage group_internal;
+
 	public TranslatedItemStack<?> item_settings;
 	public TranslatedItemStack<?> item_select_target;
 	public TranslatedItemStack<?> item_select_target_portal;
@@ -231,6 +240,7 @@ public class ConsoleMenu extends ModuleComponent<Portals> {
 								return item_select_target_portal.alternative(
 									get_module().icon_for(p),
 									"§a§l" + p.name(),
+									get_localization(p.visibility()),
 									"§6" + String.format("%.1f", dist),
 									"§b" + p.spawn().getWorld().getName()
 								);
@@ -276,6 +286,16 @@ public class ConsoleMenu extends ModuleComponent<Portals> {
 					super.item(item_select_target.item(target_name));
 				}
 			}
+		};
+	}
+
+	// TODO: This should really be a chat component, but I've got no idea how the translation system works, and it's vast.
+	private String get_localization(Portal.Visibility visibility) {
+		return switch (visibility) {
+			case PUBLIC -> publicz.str();
+			case GROUP -> group.str();
+			case GROUP_INTERNAL -> group_internal.str();
+			case PRIVATE -> privatez.str();
 		};
 	}
 

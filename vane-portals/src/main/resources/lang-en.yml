@@ -364,8 +364,14 @@ menus:
       name: "%1$s"
       lore:
         - ""
+        - "$s"
         - "§7Distance: %2$s§6m"
         - "§7World: %3$s"
+    #TODO: This should likely be indented under select_target_portal, but I'm not sure how that impacts the localization
+    publicz: "§a§lPublic§r"
+    group: "§e§lRegion Group (members)§r"
+    group_internal: "§e§lRegion Group (only visible internally)§r"
+    privatez: "§c§lPrivate§r"
 
     # The item used to unlink the current console.
     unlink_console:
